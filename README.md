@@ -38,7 +38,7 @@ You should see a returned output from IBM Cloud similar to the following:
 
 Amazing! You just sent a request to IBM Cloud that processed an audio file and returned a transcript along with a confidence level. We can see here that Watson picked up "Hello World" and is 94% confident that those words are what was said.
 
-If you got an error, especially something that says you only send a certain number of bytes, please flag one of us so we can help you!
+If you got an error, especially something that says you only sent a certain number of bytes, please flag one of us so we can help you!
 
 Okay neat. Now that we know we can at least communicate with Watson, let's build a front-end! We don't want users to have to download an audio file, open their terminal, and run a curl command. That would be ridiculous.
 
@@ -137,33 +137,33 @@ onStop = (recordedBlob) => {
 }
 ```
 
-Woah props?? We haven't constructed the `App` component yet. How are we supposed to know what it's state will be? Good question, friend. Let's think about it. If `App` renders `Recorder` and `Output`, it should probably handle the request to Watson, right? So, `Recorder` gets the audio from the user and sends it to `App`. `App` sends that audio file to IBM Cloud who returns a transcript and confidence level back to `App`. `App` then passes that transcript to `Output` who displays it to the user. Simple, right?
+Woah props?? We haven't constructed the `App` component yet. How are we supposed to know what values it will be sending to us? Good question, friend. Let's think about it. If `App` renders `Recorder` and `Output`, it should probably handle the request to Watson, right? So, `Recorder` gets the audio from the user and sends it to `App`. `App` sends that audio file to IBM Cloud who returns a transcript and confidence level back to `App`. `App` then passes that transcript to `Output` who displays it to the user. Simple, right?
 
 Okay, then `this.props.sendAudioBlob` is a function passed through props that will take the audio file from `Recorder` and pass it along to IBM.
 
 But what's a blob?? Blob objects are file-like objects that hold immutable, raw data. Files actually inherit from them. Dw if it doesn't make sense, we handled all the weird file stuff for you!
 
-Okay great! Now that we have that, we need a way to turn on the microphone. Let's add some buttons **underneath** the `ReactMic` component:
+Okay great! Now that we have that, we need a way to turn on the microphone. Let's add a button **underneath** the `ReactMic` component:
 
 ```html
-<button onClick={this.startRecording} type="button">Start</button>
-<button onClick={this.stopRecording} type="button">Stop</button>
+<button onClick={this.toggleRecording} type="button">
+    {this.state.record ? 'Stop' : 'Start'}
+</button>
 ```
 
-Then, let's add `this.startRecording` and `this.stopRecording`:
+Then, let's add `this.toggleRecording`:
 
 ```javascript
-startRecording = () => {
-    this.setState({
-      record: true,
-    });
-    this.props.microphoneStarted();
-}
+toggleRecording = () => {
+    const { record } = this.state;
 
-stopRecording = () => {
     this.setState({
-        record: false,
+      record: !record,
     });
+
+    if (!record) {
+      this.props.microphoneStarted();
+    }
 }
 ```
 
@@ -178,9 +178,9 @@ cd ../../server
 yarn
 ```
 
-Great. We'll leave it to Tim to explain how all of this works, but all you really need to know is that `src/server.js` is where our server lives. When we run this server from the command line (using `yarn start`) our app "listens" on port 9090 for incoming requests 
+Great. We'll leave it to Tim to explain how all of this works in depth, but all you really need to know is that `src/server.js` is where our server lives. When we run this server from the command line (using `yarn start`) our app "listens" on port 9090 for incoming requests 
 
-If you open up `src/server.js`, you'll this on line 25: 
+If you open up `src/server.js`, you'll see this on line 25:
 
 ```javascript
 app.post('/', upload.single('file'), (req, res, next) => { ...
@@ -188,24 +188,74 @@ app.post('/', upload.single('file'), (req, res, next) => { ...
 
 This sets up the base route of our server (i.e. `localhost:9090`) to be a POST request that takes in a file called `file`. In the actual function, you'll see a request being made to IBM Cloud. This basically takes the file in the form of a blob, saves it locally as a file, passes that file onto Watson, and waits for a response. Once it gets a response from Watson, it deletes the audio file on the server and sends the response to our front-end. How cool!
 
-
-On line 36 where it says `<YOUR API KEY>`, you guessed it, paste in your API key from IBM.
+:rocket: On line 36 where it says `<YOUR API KEY>`, you guessed it, paste in your API key from IBM.
 
 Okay great, back to the frontend!
 
+### Render `Recorder`
+
+Before we make a request to the server, let's render it in our `App` component. On the frontend, open up `index.js` and paste this into your render method:
+
+```javascript
+return (
+    <div>
+        <Recorder microphoneStarted={this.microphoneStarted} sendAudioBlob={this.getAudioBlob} />
+    </div>
+);
+```
+
+Hey look, we're passing in those two functions we talked about before as props! Better create them...
+
+```javascript
+getAudioBlob = (blob) => {
+    this.setState({
+        audioBlob: blob,
+    });
+}
+
+microphoneStarted = () => {
+    this.setState({
+        audioText: 'listening...',
+    });
+}
+```
+
+You can see that these functions, right now, basically just set the state in `App`. `this.state.audioText` is just a string representing what to display to the user based on if the microphone is recording or not, we're waiting for IBM, etc. Here, since the microphone was turned on but we haven't sent anything to IBM yet, we display to the user that we are listening to them talk. This is because we can't send and parse the audio in real time. Once we learn web sockets, though, we will be able to!
+
+Let's make sure to hold our state in `App`. In the constructor method, add this:
+
+```javascript
+this.state = {
+    audioBlob: null,
+    text: '',
+    confidenceLevel: null,
+    audioText: 'click the microphone to record some audio!',
+};
+```
+
+Awesome! Let's test this out. Before that, we need to import `Recorder`. Add this to the top of `index.js`:
+
+```javascript
+import Recorder from './components/Recorder';
+```
+
+Great. Now make sure you're in the `app` directory, then run `yarn start`. Open up Chrome and you should see the `Recorder` component rendering. Try to record some audio, it will seem like it's recording but then nothing happens. That's because we haven't sent anything to IBM yet!
+
+In order to do that, let's connect our front and back-ends together.
+
 ### Send Audio to Server
 
-On the frontend, open up `index.js` and create the following function:
+On the frontend, open up `index.js` and create the following function in the `App` class:
 
 ```javascript
 sendRequest = () => {
     this.setState({
-        audioState: 'sending a request to IBM Watson...',
+        audioText: 'sending a request to IBM Watson...',
     }, () => {
         const URL = 'http://localhost:9090/';
 
         const formData = new FormData();
-        formData.append('file', this.state.audioBlob, 'test.webm');
+        formData.append('file', this.state.audioBlob, 'recording.webm');
 
         const request = new XMLHttpRequest();
 
@@ -215,7 +265,7 @@ sendRequest = () => {
             this.setState({
                 text: outputFromIBM.transcript,
                 confidenceLevel: outputFromIBM.confidence,
-                audioState: null,
+                audioText: null,
             });
         };
 
@@ -228,16 +278,91 @@ sendRequest = () => {
 
 What does this do? This makes a POST request to our server and passes along the audio blob. When the server responds, we save the output in our state.
 
-!!! left off here !!!
+But what exactly do we save? `this.state.text` is the transcript from IBM and `this.state.confidenceLevel` is the reported confidence score from IBM.
 
-next talk about saving that state and rendering the `Recorder`.
+What's that `FormData` business? Just what we're using to send the binary audio file to the server. You're probably getting a linting warning about it because you haven't imported it.
 
+Add this to the top of `index.js`:
 
+```javascript
+import FormData from 'form-data';
+```
 
+Great! Now let's display those results to our user.
 
+### Display Results
 
+Create the file `src/Output.js`. Then open it up, and let's import `react` + our styles:
 
+```javascript
+import React from 'react';
+import '../style.scss';
+```
 
+Then, let's create the `Output` component. This component only really needs to display things. It probably won't need a state for itself. Because of this, let's make it a dumb component:
+
+```javascript
+const Output = (props) => {
+  
+};
+
+export default Output;
+```
+
+Then, let's add in what we want to display:
+
+```javascript
+if (props.audioText) {
+    return <p>{props.audioText}</p>;
+} else {
+    return (
+        <div>
+            <h1>{props.text}</h1>
+            <h1>{props.confidenceLevel}</h1>
+        </div>
+    );
+}
+```
+
+Can you see what this is doing? If there's some intermediary information to show the user, display it to them. Otherwise, show the transcript and confidence level from IBM.
+
+Okay, great! Let's bring it all together now.
+
+### Connect it Together
+
+Go back to `index.js`. Let's import `Output`.
+
+```javascript
+import Output from './components/Output';
+```
+
+Then, let's add it to our render function. Remember what it needs as props? `audioText`, `text`, and `confidenceLevel`...
+
+Paste this into the render function **underneath** `<Recorder ...`
+
+```html
+<Output audioText={this.state.audioText} text={this.state.text} confidenceLevel={this.state.confidenceLevel} />
+```
+
+Sweet! Let's try to bring it all together. Open up **two** terminal windows/tabs.
+
+In one, make sure you're in the `server` directory. Then run `yarn start`.
+
+In the other, make sure you're in the `app` directory. Then run `yarn start`.
+
+You should see that the server is listening on port `9090` and our frontend is being served on port `8080`. If you have problems with this, flag one of us!
+
+Great, then open up chrome and go to `localhost:8080`. Record some audio then see that your app sends the audio to IBM, waits for a response, then displays the output.
+
+If you have problems, let us know!
+
+## Summary
+
+Wow look at that! You can record whatever you want and then get the transcript version of it! All for free + a little work. How neat!
+
+## What You Learned
+
+sadfasdfasfasdf
 
 
 * Explanations of the what **and** the why behind each step. Try to include:
