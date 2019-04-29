@@ -18,11 +18,19 @@ You could use something like this in everything from an online chatbot/customer 
 
 ## Setup
 
-First you'll need to setup an account with IBM Cloud. This will get you a unique API key that you can use when sending speech-to-text requests.
+First you'll need to setup an account with IBM Cloud. This will get you a unique API key that you can use when sending speech-to-text requests. Follow the steps below to complete the setup:
 
-To sign up, first go [here](some-link)...
+1. Create an account: To sign up, first go [here](https://cloud.ibm.com/registration). Fill in the info needed and create an IBM account. Go to your email to click on the confirmation link. Then click Log In. **Proceed** with the acknowledgement(after reading the privcay statement of course -- like you always do).
 
-somebody is filling this in
+2. Create Speech-to-Text Resource: Click **Create Resource** in the upper right corner. Search for **Speech for Text**, the service we'll be using today, and click on the result. 
+For location to deploy in, keep it as "Dallas" and click Create.  
+![create service](readme-content/screenshots/create-service.png)
+
+3. Copy the credentials to authenticate to your service instance:  
+
+- On the **Manage** page, click **Show** to view your credentials.
+- Copy the API Key and URL values and save it somewhere. You'll need it for sending requests to Watson later!  
+![credentials](readme-content/screenshots/credentials.png)
 
 ## Test API Key
 
