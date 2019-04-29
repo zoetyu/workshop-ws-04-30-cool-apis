@@ -20,7 +20,7 @@ You could use something like this in everything from an online chatbot/customer 
 
 First you'll need to setup an account with IBM Cloud. This will get you a unique API key that you can use when sending speech-to-text requests. Follow the steps below to complete the setup:
 
-1. Create an account: To sign up, first go [here](https://cloud.ibm.com/registration). Fill in the info needed and create an IBM account. Go to your email to click on the confirmation link. Then click Log In. **Proceed** with the acknowledgement(after reading the privcay statement of course -- like you always do).
+1. Create an account: To sign up, first go [here](https://cloud.ibm.com/registration). Fill in the info needed and create an IBM account. Go to your email to click on the confirmation link. Then click Log In. **Proceed** with the acknowledgement(after reading the privacy statement of course -- like you always do :joy:).
 
 2. Create Speech-to-Text Resource: Click **Create Resource** in the upper right corner.   
 
