@@ -24,10 +24,13 @@ First you'll need to setup an account with IBM Cloud. This will get you a unique
 
 2. Create Speech-to-Text Resource: Click **Create Resource** in the upper right corner.   
 ![create service](readme-content/screenshots/create_resource.png)
+
 Search for **Speech for Text**, the service we'll be using today, and click on the result.   
 ![create service](readme-content/screenshots/search.png)
+
 For "location to deploy in", keep it as "Dallas" and click Create.  
 ![create service](readme-content/screenshots/create_service.png)
+
 
 3. Copy the credentials to authenticate to your service instance:  
 
