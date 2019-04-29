@@ -77,6 +77,17 @@ cd workshop-ws-04-03-cool-apis/app/
 yarn
 ```
 
+If you're a Windows user, change the `scripts` object in your `package.json` in the `app/` directory to the following:
+
+```javascript
+"scripts": {
+    "start": "SET NODE_ENV=development& webpack-dev-server",
+    "test": "eslint src/**.js",
+    "build": "yarn clean & SET WEBPACK_ENV=production& webpack --colors",
+    "clean": "rimraf dist"
+},
+```
+
 ## Build Web App
 
 Alright, let's think about what we are going to need for this web app. First, we definitely need to allow the user to speak into their microphone, and we need to hold onto that audio data. We're also going to want audio controls to start and stop the microphone. We also probably want an area for them to see the output from Watson.
