@@ -44,7 +44,7 @@ For "location to deploy in", keep it as "Dallas" and click Create.
 
 ## Test API Key
 
-Just to confirm that your API key has been activated, download the audio file linked [here](readme-content/audio-test.webm). `cd` into the directory you saved the file, then run the following curl command:
+Just to confirm that your API key has been activated, download the audio file linked [here](https://drive.google.com/file/d/1CxHTUi0z0VlsbCE3_cCLLBLhXZXX-LEY/view?usp=sharing). `cd` into the directory you saved the file, then run the following curl command:
 
 ```bash
 curl -X POST -u "apikey:<YOUR API KEY>" --header "Content-Type: audio/webm" --data-binary @audio-test.webm "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize"
@@ -73,7 +73,7 @@ git clone https://github.com/dartmouth-cs52-19S/workshop-ws-04-30-cool-apis
 Then change into the `app/` directory and install the necessary packages:
 
 ```bash
-cd workshop-ws-04-03-cool-apis/app/
+cd workshop-ws-04-30-cool-apis/app/
 yarn
 ```
 
@@ -413,7 +413,10 @@ Here's a resource for [github markdown](https://guides.github.com/features/maste
 
 ## Summary / What you Learned
 
-* [ ] can be checkboxes
+* [X] What cool apis are out there: Microsoft Azure, Google Vision, IBM Watson, AWS, Twilio
+* [X] 
+* [X] 
+* [X] 
 
 ## Reflection
 
