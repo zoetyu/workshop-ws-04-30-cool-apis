@@ -207,7 +207,13 @@ import Fab from '@material-ui/core/Fab';
 import '../style.scss';
 ```
 
-Then, **underneath** the `ReactMic` component, paste the following:
+Make sure to install Material-UI:
+
+```bash
+yarn add @material-ui/core
+```
+
+Alright, back to `Recorder.js`. **Underneath** the `ReactMic` component, paste the following:
 
 ```html
 <div className="fab">
@@ -284,11 +290,9 @@ Great! Let's call this function from our render method:
 
 ```javascript
 return (
-   return (
-      <div className="container">
+    <div className="container">
         {this.handleLoading()}
-      </div>
-    );
+    </div>
 );
 ```
 
@@ -359,6 +363,8 @@ Make sure you're in the `app` directory, then run `yarn start`. Open up [localho
 
 Try to record some audio, it should record you, then when you click the stop button it will show you the loading icon. If you open up Chrome DevTools, you should have console logged `sending a request to IBM...`. Flag one of us if this isn't working for you!
 
+You'll probably have some lint error. That's okay! We'll fix them all later.
+
 Alright, so let's take stock. Your `App` component should:
 
 * [ ] import `React`, `ReactDOM`, `Recorder`, and `CircularProgress`
@@ -377,7 +383,7 @@ You're right. We're sorry. But don't fret for long, because we made pretty much 
 Go back to the root, then `cd` into the `server` directory.
 
 ```bash
-cd ../../../server  ## might need one less ../
+cd ../server  ## your number of ../ might vary
 ```
 
 Now, install all the project dependencies:
@@ -390,7 +396,7 @@ Great. Open up `src/server.js` in VSCode or Atom (your choice).
 
 We'll leave it to Tim to explain how all of this works in depth, but all you really need to know is that `src/server.js` is where our server lives. When we run this server from the command line (using `yarn start`) our app "listens" on port 9090 for incoming requests.
 
-If you open up `src/server.js`, you'll see this on line 25:
+If you open up `src/server.js`, you'll see this on line 26:
 
 ```javascript
 app.post('/', upload.single('file'), (req, res, next) => { ...
@@ -425,13 +431,16 @@ sendRequest = () => {
         const request = new XMLHttpRequest();
 
         request.onload = () => {
-            const outputFromIBM = request.response.results[0].alternatives[0];
 
-            this.setState({
-                text: outputFromIBM.transcript,
-                confidenceLevel: outputFromIBM.confidence,
-                audioText: null,
-            });
+            if (request.response !== undefined) {
+                const outputFromIBM = request.response.results[0].alternatives[0];
+
+                this.setState({
+                    text: outputFromIBM.transcript,
+                    confidenceLevel: outputFromIBM.confidence,
+                    audioText: null,
+                });
+            }
         };
 
         request.open('POST', URL, true);
