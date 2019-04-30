@@ -12,41 +12,53 @@ In the world of computer science, we care a lot about abstraction and layers. Co
 
 ## Overview
 
-In this workshop, we're going to be building a web application that allows a user to speak into their microphone, then sends the audio file to the IBM Cloud to have the Watson Speech-To-Text engine return a string representing the words spoken, along with a confidence level for the accuracy of the prediction.
+In this workshop, we're going to build a web app that allows a user to speak into their microphone, then sends that audio to the IBM Cloud to have the Watson Speech-To-Text engine return a string representing the words spoken, along with a confidence level for the accuracy of the prediction.
+
+Here's a [live, deployed version](https://cs52-speech-to-text.surge.sh/) of what you're going to create.
 
 You could use something like this in everything from an online chatbot/customer service client, to an ordering platform!
-
-Checkout our live example [here](https://cs52-speech-to-text.surge.sh/)!
 
 ## Setup
 
 First you'll need to setup an account with IBM Cloud. This will get you a unique API key that you can use when sending speech-to-text requests. Follow the steps below to complete the setup:
 
-1. Create an account: To sign up, first go [here](https://cloud.ibm.com/registration). Fill in the info needed and create an IBM account. Go to your email to click on the confirmation link. Then click Log In. **Proceed** with the acknowledgement(after reading the privacy statement of course -- like you always do :joy:).
+### Create An Account
 
-2. Create Speech-to-Text Resource: Click **Create Resource** in the upper right corner.   
+1. Open this [link](https://cloud.ibm.com/registration).
+2. Fill in the info needed and create an IBM account.
+3. Go to your email to click on the confirmation link.
+4. Click Log In.
+5. **Proceed** with the acknowledgement (after reading the privacy statement of course -- like you always do :joy:).
+
+### Create Speech-To-Text Resource
+
+1. Click **Create Resource** in the upper right corner.
 
 ![create service](readme-content/screenshots/create_resource.png)
 
-Search for **Speech for Text**, the service we'll be using today, and click on the result.
+2. Search for **Speech for Text**, the service we'll be using today, and click on the result.
 
 ![create service](readme-content/screenshots/search.png)
 
-For "location to deploy in", keep it as "Dallas" and click Create.
+3. For "location to deploy in", keep it as "Dallas" and click Create.
 
 ![create service](readme-content/screenshots/create_service.png)
 
+### Copy Your Authentication Credentials
 
-3. Copy the credentials to authenticate to your service instance:  
-
-- On the **Manage** page, click **Show** to view your credentials.
-- Copy the API Key and URL values and save it somewhere. You'll need it for sending requests to Watson later! 
+1. On the **Manage** page, click **Show Credentials** to view your auth credentials.
 
 ![credentials](readme-content/screenshots/credentials.png)
 
+2. Copy the API Key, and just save it somewhere. We recommend opening a text file and pasting it there for the time being. You're going to need this for sending requests to Watson later!
+
 ## Test API Key
 
-Just to confirm that your API key has been activated, download the audio file linked [here](https://drive.google.com/file/d/1CxHTUi0z0VlsbCE3_cCLLBLhXZXX-LEY/view?usp=sharing). `cd` into the directory you saved the file, then run the following curl command:
+Just to confirm that your API key has been activated, download the audio file linked [here](https://drive.google.com/file/d/1CxHTUi0z0VlsbCE3_cCLLBLhXZXX-LEY/view?usp=sharing). 
+
+Open up a new terminal window and `cd` into the directory you saved the file (probably your Downloads).
+
+Run the following curl command:
 
 ```bash
 curl -X POST -u "apikey:<YOUR API KEY>" --header "Content-Type: audio/webm" --data-binary @audio-test.webm "https://stream.watsonplatform.net/speech-to-text/api/v1/recognize"
@@ -60,6 +72,8 @@ Amazing! You just sent a request to IBM Cloud that processed an audio file and r
 
 If you got an error, especially something that says you only sent a certain number of bytes, please flag one of us so we can help you!
 
+## Build Frontend
+
 Okay neat. Now that we know we can at least communicate with Watson, let's build a front-end! We don't want users to have to download an audio file, open their terminal, and run a curl command. That would be ridiculous.
 
 Instead, let's build a tool that allows them to speak into their mic, and we handle all the rest. To get started, let's get setup.
@@ -72,14 +86,19 @@ First clone (or fork) the repository:
 git clone https://github.com/dartmouth-cs52-19S/workshop-ws-04-30-cool-apis
 ```
 
-Then change into the `app/` directory and install the necessary packages:
+Change into the `app/` directory:
 
 ```bash
-cd workshop-ws-04-30-cool-apis/app/
+cd workshop-ws-04-30-cool-apis/app
+```
+
+Install the necessary packages:
+
+```bash
 yarn
 ```
 
-If you're a Windows user, change the `scripts` object in your `package.json` in the `app/` directory to the following:
+:exclamation: If you're a Windows user, change the `scripts` object in your `package.json` in the `app/` directory to the following:
 
 ```javascript
 "scripts": {
@@ -106,7 +125,7 @@ Alright, let's add it to our project!
 yarn add react-mic
 ```
 
-Awesome. Now, let's add this to our project. Here's some of our component structure. Where do you think it goes?
+Awesome. Now, let's render it! Here's some of our component structure. Where do you think it goes?
 
 ```
 ├──[app]/                        # root directory
@@ -123,16 +142,17 @@ If you thought `Recorder.js`, you're right!
 
 ### Audio Recorder
 
-Great, open up `Recorder.js` (Atom or VSCode, take your pick!) and you should see the basic architecture of a React component. You're probably getting some linting errors right now because we've set it up as a smart component, even thought it doesn't hold any state yet. Hold on friend, it's coming.
+Great, open up `Recorder.js` (VSCode or Atom, your choice). You should see the basic architecture of a React component.
 
-Before that though, let's add in `react-mic` and our styles:
+You're probably getting some linting errors right now because we've set it up as a smart component, even thought it doesn't hold any state yet. Hold on friend, it's coming.
+
+First, let's import `react-mic` at the top of `Recorder.js`:
 
 ```javascript
 import { ReactMic } from 'react-mic';
-import '../style.scss';
 ```
 
-In the render function, let's return a `ReactMic` component:
+Then, in the render function, let's return a `ReactMic` component:
 
 ```javascript
 <div>
@@ -140,15 +160,15 @@ In the render function, let's return a `ReactMic` component:
         record={this.state.record}
         className="sound-wave"
         onStop={this.onStop}
-        strokeColor="#000000"
-        backgroundColor="#FF4081"
+        strokeColor="#000"
+        backgroundColor="#fff"
     />
 </div>
 ```
 
 Wait... what does this do?
 
-The `record` prop is a boolean indicating if the microphone should be recording or not. `className` should be familiar, that just allows us to target the component for styling. `onStop` is a function that is called when the microphone stops recording. `strokeColor` is the color of the sound wave, and `backgroundColor` is the color of the microphone area.
+The `record` prop is a boolean indicating if the microphone should be recording or not. This is something that `react-mic` created and something they take care of. `className` should be familiar, that just allows us to target the component for styling. `onStop` is a function that is called when the microphone stops recording. `strokeColor` is the color of the sound wave, and `backgroundColor` is the color of the microphone area.
 
 Once you paste that in, you'll probably be getting some linting errors, because our app has no state or methods. Let's fix that.  
 
@@ -160,7 +180,7 @@ this.state = {
 };
 ```
 
-Then, let's add in the `onStop` method: 
+Then, add the `onStop` method to your `Recorder` class:
 
 ```javascript
 onStop = (recordedBlob) => {
@@ -168,21 +188,38 @@ onStop = (recordedBlob) => {
 }
 ```
 
-Woah props?? We haven't constructed the `App` component yet. How are we supposed to know what values it will be sending to us? Good question, friend. Let's think about it. If `App` renders `Recorder` and `Output`, it should probably handle the request to Watson, right? So, `Recorder` gets the audio from the user and sends it to `App`. `App` sends that audio file to IBM Cloud who returns a transcript and confidence level back to `App`. `App` then passes that transcript to `Output` who displays it to the user. Simple, right?
+Woah props?? We haven't constructed the `App` component yet. How are we supposed to know what values it will be sending to us? Good question, friend. Let's think about it.
 
-Okay, then `this.props.sendAudioBlob` is a function passed through props that will take the audio file from `Recorder` and pass it along to IBM.
+:books: If `App` renders `Recorder` and `Output`, it should probably handle the request to Watson, right? So, `Recorder` gets the audio from the user and sends it to `App`. `App` sends that audio file to IBM Cloud who returns a transcript and confidence level back to `App`. `App` then passes that transcript to `Output` who displays it to the user. Simple, right? If that didn't make sense, read it again or flag one of us so we can explain it!
 
-But what's a blob?? Blob objects are file-like objects that hold immutable, raw data. Files actually inherit from them. Dw if it doesn't make sense, we handled all the weird file stuff for you!
+Okay, then `this.props.sendAudioBlob` is a function passed through props that will take the audio file from `Recorder` and pass it along to IBM. We haven't written that function yet, but we will later.
 
-Okay great! Now that we have that, we need a way to turn on the microphone. Let's add a button **underneath** the `ReactMic` component:
+Okay, but what's a blob?? Blob objects are file-like objects that hold immutable, raw data. Files actually inherit from them. Dw if it doesn't make sense, we handled all the weird file stuff for you! Just be comfortable with us using the word Blob. At the very least, it's like a throwback to those cs10 dayz... :sunglasses:
 
-```html
-<button onClick={this.toggleRecording} type="button">
-    {this.state.record ? 'Stop' : 'Start'}
-</button>
+Okay great! Now that we've explained that, we need a way to turn on the microphone. Since `this.state.record` is a boolean stating if the microphone should be on or off, let's just add a button that changes this value.
+
+We're going to use [Material UI](https://material-ui.com/) for the button! That means we need to import it. While we're at it, let's import our styles too.
+
+In `Recorder.js` paste the following at the top of the file.
+
+```javascript
+import Fab from '@material-ui/core/Fab';
+import '../style.scss';
 ```
 
-Then, let's add `this.toggleRecording`:
+Then, **underneath** the `ReactMic` component, paste the following:
+
+```html
+<div className="fab">
+    <Fab color="secondary" onClick={this.toggleRecording}>
+        <i className="material-icons">{this.state.record ? 'stop' : 'mic'}</i>
+    </Fab>
+</div>
+```
+
+We can see that when the user clicks the button (`Fab`), we call the `this.toggleRecording` method. Inside the `Fab`, we render an icon from [font-awesome](https://fontawesome.com/icons).
+
+Alright, let's make sure to add `this.toggleRecording` to our `Recorder` class:
 
 ```javascript
 toggleRecording = () => {
@@ -198,52 +235,68 @@ toggleRecording = () => {
 }
 ```
 
-What's `this.props.microphoneStarted`? It's another function from `App` to tell `Output` that the microphone is recording. Neat!
+You can see that this basically just takes `this.state.record` and makes it false if it's true and true if it's false. Super clean syntax too!
 
-### Send Request to Watson
+Then, we call `this.props.microphoneStarted`. What is that? It's another function from `App` to tell `Output` that the microphone is recording. We haven't written it yet, but we know we need to later.
 
-Now that `App` has the audio data in the form of a blob, let's send it onto Watson. In order to do that, we need a Node/Express server. Whaaaaaat? We haven't learned that yet. Hey, u right. Because of this, we made one for you. Go back to the root, then change into the `server directory`. Then, install the project dependencies.
+Okay, before you move on, make sure your `Recorder.js` file has the following specs:
 
-```bash
-cd ../../../server
-yarn
-```
-
-Great. We'll leave it to Tim to explain how all of this works in depth, but all you really need to know is that `src/server.js` is where our server lives. When we run this server from the command line (using `yarn start`) our app "listens" on port 9090 for incoming requests 
-
-If you open up `src/server.js`, you'll see this on line 25:
-
-```javascript
-app.post('/', upload.single('file'), (req, res, next) => { ...
-```
-
-This sets up the base route of our server (i.e. `localhost:9090`) to be a POST request that takes in a file called `file`. In the actual function, you'll see a request being made to IBM Cloud. This basically takes the file in the form of a blob, saves it locally as a file, passes that file onto Watson, and waits for a response. Once it gets a response from Watson, it deletes the audio file on the server and sends the response to our front-end. How cool!
-
-:rocket: On line 36 where it says `<YOUR API KEY>`, you guessed it, paste in your API key from IBM.
-
-Okay great, back to the frontend!
+* [ ] import `React`, `ReactMic`, `Fab`, and `styles.scss`
+* [ ] hold a boolean `record` in state
+* [ ] have `toggleRecording` and `onStop` functions
+* [ ] render a `ReactMic` component and a `Fab` button.
 
 ### Render `Recorder`
 
-Before we make a request to the server, let's render it in our `App` component. On the frontend, open up `index.js` and paste this into your render method:
+Okay great, now let's render this component in `App`.
+
+Open up `index.js`, and import `Recorder` at the top of the file. We're also going to need another Material UI component later, so let's just import it now:
+
+```javascript
+import Recorder from './components/Recorder';
+import CircularProgress from '@material-ui/core/CircularProgress';
+```
+
+Alright here's the idea. First we render a `Recorder`. After the user speaks into the microphone, `Recorder` passes us some audio which we pass on to Watson. While we're waiting, let's have a loading icon so people know to wait.
+
+To do that, let's add a boolean called `loading` into our state. In the constructor, add this:
+
+```javascript
+this.state = {
+    loading: false,
+}
+```
+
+Then, in the `App` component, let's add the following function:
+
+```javascript
+handleLoading = () => {
+    if (this.state.loading) {
+      return <CircularProgress color="secondary" />;
+    }
+    return <Recorder microphoneStarted={this.microphoneStarted} sendAudioBlob={this.getAudioBlob} />;
+}
+```
+
+You can see that this function returns one of two possible React components. If `this.state.loading` is true, we return a loading bar from Material UI. If not, we return a `Recorder`.
+
+Great! Let's call this function from our render method:
 
 ```javascript
 return (
-    <div>
-        <Recorder microphoneStarted={this.microphoneStarted} sendAudioBlob={this.getAudioBlob} />
-    </div>
+   return (
+      <div className="container">
+        {this.handleLoading()}
+      </div>
+    );
 );
 ```
 
-Hey look, we're passing in those two functions we talked about before as props! Better create them...
+Hey look, when we render `Recorder`, we're passing in those two functions (`microphoneStarted` and `sendAudioBlob`) we talked about before as props! Since we haven't written them yet, we should do that now. :rocket:
+
+Let's create `microphoneStarted` first. In `App`, create this function:
 
 ```javascript
-getAudioBlob = (blob) => {
-    this.setState({
-        audioBlob: blob,
-    });
-}
-
 microphoneStarted = () => {
     this.setState({
         audioText: 'listening...',
@@ -251,34 +304,113 @@ microphoneStarted = () => {
 }
 ```
 
-You can see that these functions, right now, basically just set the state in `App`. `this.state.audioText` is just a string representing what to display to the user based on if the microphone is recording or not, we're waiting for IBM, etc. Here, since the microphone was turned on but we haven't sent anything to IBM yet, we display to the user that we are listening to them talk. This is because we can't send and parse the audio in real time. Once we learn web sockets, though, we will be able to!
+You can see that this function basically just sets `this.state.audioText`, which is just a string. This will be displayed to the user, giving them instructions or telling them what is going on (i.e. we're waiting for IBM, etc.)
 
-Let's make sure to hold our state in `App`. In the constructor method, add this:
+Before we forget, let's add that to our state. In the constructor, set your declaration of `this.state` to the following:
 
 ```javascript
 this.state = {
-    audioBlob: null,
-    text: '',
-    confidenceLevel: null,
+    loading: false,
     audioText: 'click the microphone to record some audio!',
-};
+}
 ```
 
-Awesome! Let's test this out. Before that, we need to import `Recorder`. Add this to the top of `index.js`:
+Great! Now, if you remember from before, the `Recorder` component expects a second function passed in through props. This function gets the audio blob from `ReactMic` and passes it along to `App`. Let's add that now:
 
 ```javascript
-import Recorder from './components/Recorder';
+getAudioBlob = (blob) => {
+    this.setState({
+      audioBlob: blob,
+    });
+
+    this.sendRequest();
+}
 ```
 
-Great. Now make sure you're in the `app` directory, then run `yarn start`. Open up Chrome and you should see the `Recorder` component rendering. Try to record some audio, it will seem like it's recording but then nothing happens. That's because we haven't sent anything to IBM yet!
+Looks like we have another thing to add to our state! In the constructor, make sure `this.state` is set to:
 
-In order to do that, let's connect our front and back-ends together.
+```javascript
+this.state = {
+    loading: false,
+    audioText: 'click the microphone to record some audio!',
+    audioBlob: null,
+}
+```
 
-You might an ESLint error for unsused state field. Don't worry, you can ignore for now.
+What's an `audioBlob`? It's basically just the audio of what the user said in the form of binary data.
+
+What's `this.sendRequest` you ask? That's a function that we have to write that will take `this.state.audioBlob` and give it to IBM to transcribe. Let's create it now! :rocket:
+
+In your `App` class, add the following function:
+
+```javascript
+sendRequest = () => {
+    console.log('sending a request to IBM...');
+}
+```
+
+We're definitely going to want to add stuff to this later, but for now let's just console log so we know our frontend is working.
+
+### Test It Out
+
+Let's test this out.
+
+Make sure you're in the `app` directory, then run `yarn start`. Open up [localhost:8080](http://localhost:8080) in Chrome. You should see the `Recorder` component rendering.
+
+Try to record some audio, it should record you, then when you click the stop button it will show you the loading icon. If you open up Chrome DevTools, you should have console logged `sending a request to IBM...`. Flag one of us if this isn't working for you!
+
+Alright, so let's take stock. Your `App` component should:
+
+* [ ] import `React`, `ReactDOM`, `Recorder`, and `CircularProgress`
+* [ ] hold `loading`, `audioText`, and `audioBlob` in state
+* [ ] have `getAudioBlob`, `microphoneStarted`, `handleLoading`, and `sendRequest` functions
+* [ ] have a `render` function that calls `handleLoading`
+
+Awesome! Now we have a way for the user to record themselves and we have a way to hold onto what they said. Now let's pass it along to IBM
+
+### Send Request to Watson
+
+In order to send the file to Watson, we're going to need a Node/Express server. Whaaaaaat? We haven't learned that yet!
+
+You're right. We're sorry. But don't fret for long, because we made pretty much the entire thing for you.
+
+Go back to the root, then `cd` into the `server` directory.
+
+```bash
+cd ../../../server  ## might need one less ../
+```
+
+Now, install all the project dependencies:
+
+```javascript
+yarn
+```
+
+Great. Open up `src/server.js` in VSCode or Atom (your choice). 
+
+We'll leave it to Tim to explain how all of this works in depth, but all you really need to know is that `src/server.js` is where our server lives. When we run this server from the command line (using `yarn start`) our app "listens" on port 9090 for incoming requests.
+
+If you open up `src/server.js`, you'll see this on line 25:
+
+```javascript
+app.post('/', upload.single('file'), (req, res, next) => { ...
+```
+
+This sets up the base route of our server (i.e. `localhost:9090/`) to be a POST request that takes in a file called `file`. In the actual function, you'll see a request being made to IBM Cloud. This basically takes the audio Blob from `ReactMic`, saves it locally as a file, passes that file onto Watson, and waits for a response. Once it gets a response from Watson, it deletes the audio file on the server and sends the response to our front-end. How cool!
+
+:rocket: On line 36 where it says `<YOUR API KEY>`, you guessed it, paste in your API key from IBM.
+
+Aaaaaaand that was it. Not so bad, right? Back to the frontend!
 
 ### Send Audio to Server
 
-On the frontend, open up `index.js` and create the following function in the `App` class:
+Great so now that `App` has the audio blob and we've built a server that handles all communication with Watson, all we have to do is pass that blob to the server.
+
+In the `app` directory, open up `index.js`.
+
+Can you think of where we should send our blob to the server? If you thought the `sendRequest` function, you're right!
+
+Instead of console logging, paste this into the `sendRequest` function:
 
 ```javascript
 sendRequest = () => {
@@ -309,11 +441,31 @@ sendRequest = () => {
 }
 ```
 
-What does this do? This makes a POST request to our server and passes along the audio blob. When the server responds, we save the output in our state.
+What does this do? Well first it changes `this.state.audioText` so we can tell the user that we're sending a request.
 
-But what exactly do we save? `this.state.text` is the transcript from IBM and `this.state.confidenceLevel` is the reported confidence score from IBM.
+Then, after that occurs, it makes a POST request to our server and passes along the audio blob. When the server responds, we save the output in our state.
 
-What's that `FormData` business? Just what we're using to send the binary audio file to the server. You're probably getting a linting warning about it because you haven't imported it.
+If you look where we call `this.setState`, we've added some new things to our `state`! `this.state.text` is the transcript from IBM and `this.state.confidenceLevel` is the reported confidence score from IBM.
+
+In order to make sure we always have access to this, let's initialize them.
+
+In the constructor function, you should now have:
+
+```javascript
+this.state = {
+    loading: false,
+    audioText: 'click the microphone to record some audio!',
+    audioBlob: null,
+    text: '',
+    confidenceLevel: null,
+}
+```
+
+Great. Let's go back to the `sendRequest` function for a minute. 
+
+What do you think that `FormData` business is? Well, it's basically just a module that we're using to send the blob (remember it's just a binary data file) to the server.
+
+You're probably getting a linting warning about it because you haven't imported it.
 
 Add this to the top of `index.js`:
 
@@ -321,18 +473,43 @@ Add this to the top of `index.js`:
 import FormData from 'form-data';
 ```
 
-Great! Now let's display those results to our user.
+Awesome! Let's take stock of where we're at. Your `App` component should now:
+
+* [ ] import `React`, `ReactDOM`, `Recorder`, `CircularProgress`, and `FormData`
+* [ ] have `loading`, `audioText`, `audioBlob`, `text`, and `confidenceLevel` in state
+* [ ] have the same functions as before
+* [ ] have a filled in `sendRequest` function
+* [ ] allow users to record audio, then send that audio to the server
+* [ ] when it gets results, it should save them in `this.state`
+
+### Test It Out
+
+Before we display those results, let's just test this out. One way to do that is to just add some console logs to your `render` function.
+
+Before you return anything in the render function (aka first line of the function), just add `console.log(this.state.text)`.
+
+Then, open up not one but **two** terminal windows/tabs. Make sure one of them is in the `app` directory and the other is in the `server` directory.
+
+Run `yarn start` from both.
+
+Open up Chrome and Chrome DevTools. Go to [localhost:8080](http://localhost:8080/).
+
+Record some audio, and watch your console for logs. You should eventually get a text of what you said logging in the console. Flag us if that doesn't work!
 
 ### Display Results
 
-Create the file `src/components/Output.js`. Then open it up, and let's import `react` + our styles:
+Alright, so now that we have the transcribed text coming from Watson, let's display it to our user in a nice way.
+
+Create the file `Output.js` in `app/src/components/`. Open it up.
+
+First, let's import `react` + our styles:
 
 ```javascript
 import React from 'react';
 import '../style.scss';
 ```
 
-Then, let's create the `Output` component. This component only really needs to display things. It probably won't need a state for itself. Because of this, let's make it a dumb component:
+Then, let's create the `Output` component. This component only really needs to display things. It probably won't need a state for itself. Because of this, let's just make it a dumb component:
 
 ```javascript
 const Output = (props) => {
@@ -346,20 +523,20 @@ Then, let's add in what we want to display:
 
 ```javascript
 if (props.audioText) {
-    return <p>{props.audioText}</p>;
+    return <h1>{props.audioText}</h1>;
 } else {
     return (
-        <div>
-            <h1>{props.text}</h1>
-            <h1>{props.confidenceLevel}</h1>
-        </div>
+      <div>
+        <h1>{props.text}</h1>
+        <b>{`Confidence level: ${props.confidenceLevel}`}</b>
+      </div>
     );
 }
 ```
 
 Can you see what this is doing? If there's some intermediary information to show the user, display it to them. Otherwise, show the transcript and confidence level from IBM.
 
-Okay, great! Let's bring it all together now.
+Wow, that was easy!
 
 ### Connect it Together
 
@@ -371,65 +548,64 @@ import Output from './components/Output';
 
 Then, let's add it to our render function. Remember what it needs as props? `audioText`, `text`, and `confidenceLevel`...
 
-Paste this into the render function **underneath** `<Recorder ...`
+Paste this into the render function **above** the call to `this.handleLoading`.
 
 ```html
 <Output audioText={this.state.audioText} text={this.state.text} confidenceLevel={this.state.confidenceLevel} />
 ```
 
-Sweet! Let's try to bring it all together. Open up **two** terminal windows/tabs.
+### Test It Out
 
-In one, make sure you're in the `server` directory. Then run `yarn start`.
+Sweet! Let's try to bring it all together now. Open up those **two** terminal windows/tabs again.
 
-In the other, make sure you're in the `app` directory. Then run `yarn start`.
+Make sure one is in the `app` directory and the other is in the `server` directory.
 
-You should see that the server is listening on port `9090` and our frontend is being served on port `8080`. If you have problems with this, flag one of us!
+Run `yarn start` from both.
 
-Great, then open up chrome and go to `localhost:8080`. Record some audio then see that your app sends the audio to IBM, waits for a response, then displays the output.
+You should see that the server is listening on port `9090` and our frontend is being served on port `8080`.
+
+Great, then open up Chrome again and go to `localhost:8080`. Record some audio then see that your app sends the audio to IBM, waits for a response, then displays the output.
 
 If you have problems, let us know!
 
+## Recap
+
+Wow look at that! You can record whatever you want and then get the transcript version of it! All for free + a little work. How neat! Hopefully, it made you more confident about incorporating these amazing and powerful API's into your own work!
+
 ## Summary
 
-Wow look at that! You can record whatever you want and then get the transcript version of it! All for free + a little work. How neat!
+Soooo, what was the point of all of this?
+
+Well, this workshop (hopefully) demonstrates how to leverage the power of pre-existing APIs that do some pretty complex and impressive things into *your* React app! It also hopefully allowed you to dip your toes into some server-side programming in Node.
+
+Just as a little note, for stuff like this where you're passing around files or making a lot of API calls, it is relatively common to set up a server to handle those requests. That's why we needed the Node/Express server for this workshop.
+
+This structure of programming also abstracts out communication that the frontend doesn't necessarily have to be privy to. Consider how we use it here: Watson API requires a .webm file, but to convert a blob into a file isn't the most straightforward thing. Our server does all the middle work of converting the file, sending it to Watson and receiving the response. Then it just passes what we want from Watson onto the frontend.
 
 ## What You Learned
 
-You just learned how to make your own speech-to-text app! Hopefully, it made you more confident about incorporating these amazing and powerful API's into your own work!
-
-* Explanations of the what **and** the why behind each step. Try to include:
-  * higher level concepts
-  * best practices
-
-Remember to explain any notation you are using.
-
-```javascript
-/* and use code blocks for any code! */
-```
-
-![screen shots are helpful](readme-content/screenshot.png)
-
-:sunglasses: GitHub markdown files [support emoji notation](http://www.emoji-cheat-sheet.com/)
-
-## Summary / What you Learned
-
-* [X] What different APIs various cloud computing platforms offer: Microsoft Azure, Google Vision, IBM Watson, AWS, and Twilio!
-* [X] How to setup an account with IBM Cloud and use the Speech-To-Text API.
-* [X] How these API's are used in the industry.
-* [X] A peak into how to do a complicated API request! 
+* [ ] Different APIs/cloud computing platforms and what they offer: Microsoft Azure, Google Vision, IBM Watson, AWS, and Twilio!
+* [ ] How to setup an account with IBM Cloud and use the Speech-To-Text API.
+* [ ] How to allow the user to record audio.
+* [ ] How to send requests to the API, parse the response, and display it
+* [ ] A fairly common setup for a full-stack web app!
 
 ## Reflection
 
-1. How might AWS be used by developers and how is it different than Microsoft Azure, Google Cloud Vision, and IBM Watson.
-2. Talk about how you can incorporate one of the API's we've introduced today. What are some of the drawbacks?
-3. What did you think about our workshop? 
+Make sure to answer these questions on Canvas:
+
+1. How might AWS be used by developers and how is it different than Microsoft Azure, Google Cloud Vision, and IBM Watson?
+2. What's one example of a cool API that we talked about that you could use in a React app? What are the pros/cons of that specific API?
+
+Also, please leave us feedback on Canvas!
 
 ## Resources
 
-* [IBM Watson Speech-To-Text example](https://github.com/AaronWard/IBM-Watson-Speech-To-Text)
-* [React-mic example](https://www.npmjs.com/package/react-mic)
-* [Another React-mic example](https://hackingbeauty.github.io/react-mic/)
-* [Multer middleware](https://github.com/expressjs/multer)
-* [Express-form-data docs](https://www.npmjs.com/package/express-form-data)
-* [Nodejs Binary Data](https://stackoverflow.com/questions/48994269/nodejs-send-binary-data-with-request)
-* [React Backend Dali Workshop](https://github.com/dali-lab/react-node-workshop-backend)
+* [IBM Watson Speech-To-Text Example](https://github.com/AaronWard/IBM-Watson-Speech-To-Text)
+* [react-mic example](https://www.npmjs.com/package/react-mic)
+* [another react-mic example](https://hackingbeauty.github.io/react-mic/)
+* [multer middleware](https://github.com/expressjs/multer)
+* [express-form-data docs](https://www.npmjs.com/package/express-form-data)
+* [sending binary data with node](https://stackoverflow.com/questions/48994269/nodejs-send-binary-data-with-request)
+* [React/Node DALI Workshop](https://github.com/dali-lab/react-node-workshop-backend)
+* [Material UI](https://material-ui.com/)
