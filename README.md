@@ -16,6 +16,8 @@ In this workshop, we're going to be building a web application that allows a use
 
 You could use something like this in everything from an online chatbot/customer service client, to an ordering platform!
 
+Checkout our live example [here](https://cs52-speech-to-text.surge.sh/)!
+
 ## Setup
 
 First you'll need to setup an account with IBM Cloud. This will get you a unique API key that you can use when sending speech-to-text requests. Follow the steps below to complete the setup:
@@ -121,7 +123,7 @@ If you thought `Recorder.js`, you're right!
 
 ### Audio Recorder
 
-Great, open up `Recorder.js` and you should see the basic architecture of a React component. You're probably getting some linting errors right now because we've set it up as a smart component, even thought it doesn't hold any state yet. Hold on friend, it's coming.
+Great, open up `Recorder.js` (Atom or VSCode, take your pick!) and you should see the basic architecture of a React component. You're probably getting some linting errors right now because we've set it up as a smart component, even thought it doesn't hold any state yet. Hold on friend, it's coming.
 
 Before that though, let's add in `react-mic` and our styles:
 
@@ -203,7 +205,7 @@ What's `this.props.microphoneStarted`? It's another function from `App` to tell 
 Now that `App` has the audio data in the form of a blob, let's send it onto Watson. In order to do that, we need a Node/Express server. Whaaaaaat? We haven't learned that yet. Hey, u right. Because of this, we made one for you. Go back to the root, then change into the `server directory`. Then, install the project dependencies.
 
 ```bash
-cd ../../server
+cd ../../../server
 yarn
 ```
 
@@ -272,6 +274,8 @@ Great. Now make sure you're in the `app` directory, then run `yarn start`. Open 
 
 In order to do that, let's connect our front and back-ends together.
 
+You might an ESLint error for unsused state field. Don't worry, you can ignore for now.
+
 ### Send Audio to Server
 
 On the frontend, open up `index.js` and create the following function in the `App` class:
@@ -321,7 +325,7 @@ Great! Now let's display those results to our user.
 
 ### Display Results
 
-Create the file `src/Output.js`. Then open it up, and let's import `react` + our styles:
+Create the file `src/components/Output.js`. Then open it up, and let's import `react` + our styles:
 
 ```javascript
 import React from 'react';
@@ -391,8 +395,7 @@ Wow look at that! You can record whatever you want and then get the transcript v
 
 ## What You Learned
 
-sadfasdfasfasdf
-
+You just learned how to make your own speech-to-text app! Hopefully, it made you more confident about incorporating these amazing and powerful API's into your own work!
 
 * Explanations of the what **and** the why behind each step. Try to include:
   * higher level concepts
@@ -408,24 +411,25 @@ Remember to explain any notation you are using.
 
 :sunglasses: GitHub markdown files [support emoji notation](http://www.emoji-cheat-sheet.com/)
 
-Here's a resource for [github markdown](https://guides.github.com/features/mastering-markdown/).
-
-
 ## Summary / What you Learned
 
-* [X] What cool apis are out there: Microsoft Azure, Google Vision, IBM Watson, AWS, Twilio
-* [X] 
-* [X] 
-* [X] 
+* [X] What different APIs various cloud computing platforms offer: Microsoft Azure, Google Vision, IBM Watson, AWS, and Twilio!
+* [X] How to setup an account with IBM Cloud and use the Speech-To-Text API.
+* [X] How these API's are used in the industry.
+* [X] A peak into how to do a complicated API request! 
 
 ## Reflection
 
-*2 questions for the workshop participants to answer (very short answer) when they submit the workshop. These should try to get at something core to the workshop, the what and the why.*
-
-* [ ] 2 reflection questions
-* [ ] 2 reflection questions
-
+1. How might AWS be used by developers and how is it different than Microsoft Azure, Google Cloud Vision, and IBM Watson.
+2. Talk about how you can incorporate one of the API's we've introduced today. What are some of the drawbacks?
+3. What did you think about our workshop? 
 
 ## Resources
 
-* cite any resources
+* [IBM Watson Speech-To-Text example](https://github.com/AaronWard/IBM-Watson-Speech-To-Text)
+* [React-mic example](https://www.npmjs.com/package/react-mic)
+* [Another React-mic example](https://hackingbeauty.github.io/react-mic/)
+* [Multer middleware](https://github.com/expressjs/multer)
+* [Express-form-data docs](https://www.npmjs.com/package/express-form-data)
+* [Nodejs Binary Data](https://stackoverflow.com/questions/48994269/nodejs-send-binary-data-with-request)
+* [React Backend Dali Workshop](https://github.com/dali-lab/react-node-workshop-backend)
